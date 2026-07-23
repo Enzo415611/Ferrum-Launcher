@@ -1,14 +1,16 @@
-use dioxus::{document::Style, html::u::style, prelude::{AssetVariant::Css, *}};
-use dioxus_primitives::select::SelectGroup;
+use crate::Route;
+use dioxus::{
+    document::Style,
+    html::u::style,
+    prelude::{AssetVariant::Css, *},
+};
 use dioxus_style::{scoped_style, with_css};
-use crate::{Route};
 
-#[component]
 #[with_css(css, "src/view/css/login.css")]
 pub fn Login() -> Element {
     let navigator = use_navigator();
-    let mut border_color = use_signal(|| "#282A36") ;
-    
+    let mut border_color = use_signal(|| "#282A36");
+
     rsx! {
         div { class: css::login,
             div {
@@ -24,6 +26,4 @@ pub fn Login() -> Element {
             }
         }
     }
-    
-
 }

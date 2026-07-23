@@ -15,9 +15,8 @@ pub enum Route {
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
 fn main() {
+    // variavel de ambiente em tempo de compilação para fazer build do app
     const CLIENT_ID: &str = env!("CLIENT_ID");
-
-    println!("{}", CLIENT_ID);
 
     dioxus::launch(App);
 }
@@ -29,4 +28,3 @@ fn App() -> Element {
         Router::<Route> {}
     }
 }
-
