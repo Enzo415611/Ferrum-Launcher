@@ -15,6 +15,10 @@ pub enum Route {
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
 fn main() {
+    const CLIENT_ID: &str = env!("CLIENT_ID");
+
+    println!("{}", CLIENT_ID);
+
     dioxus::launch(App);
 }
 
