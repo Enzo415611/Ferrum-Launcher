@@ -1,30 +1,31 @@
 mod view;
+mod launcher;
 
-use dioxus::prelude::*;
-use view::{home::Home, login::Login};
+use std::thread;
 
-#[derive(Debug, Clone, Routable, PartialEq)]
-#[rustfmt::skip]
-pub enum Route {
-    #[route("/")]
-    Login {},
-    #[route("/home")]
-    Home {}
-}
+use dioxus::signals::{GlobalSignal, Signal};
+use lighty_launcher::UserProfile;
 
-const MAIN_CSS: Asset = asset!("/assets/main.css");
+use crate::view::view::App;
+
+
+pub static STATE: GlobalSignal<AppState> = Signal::global(|| {
+    AppState {
+        current_user_profile: None
+    }
+});
 
 fn main() {
+    thread::spawn(|| lighty_launcher::core::AppState::init("FerrumLauncher").expect(""));
+
     // variavel de ambiente em tempo de compilação para fazer build do app
-    const CLIENT_ID: &str = env!("CLIENT_ID");
+    //const CLIENT_ID: &str = env!("CLIENT_ID");
 
     dioxus::launch(App);
 }
 
-#[component]
-fn App() -> Element {
-    rsx! {
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
-        Router::<Route> {}
-    }
+#[derive(Debug, Clone, Default)]
+struct AppState {
+    current_user_profile: Option<UserProfile>
 }
+

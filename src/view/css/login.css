@@ -25,6 +25,11 @@
     align-items: center;
     justify-content: center;
     flex-direction: row;
-    height: 100vh;
     gap: 10px;
+}
+
+.offline-login-page {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }

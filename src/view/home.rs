@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::Route;
+use crate::view::view::Route;
 
 #[component]
 pub fn Home() -> Element {

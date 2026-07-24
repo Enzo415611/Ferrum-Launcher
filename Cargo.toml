@@ -6,9 +6,12 @@ edition = "2021"
 
 
 [dependencies]
+anyhow = "1.0.104"
 dioxus = { version = "0.7.9", features = ["router"] }
 dioxus-icons = { version = "0.1.0", default-features = false }
 dioxus_style = "0.5.3"
+keyring = "4.1.5"
+lighty-launcher = { version = "26.5.12", features = ["all-loaders", "events", "keyring"] }
 
 
 [build-dependencies]
