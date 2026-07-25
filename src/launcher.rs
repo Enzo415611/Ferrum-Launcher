@@ -1,14 +1,10 @@
+use anyhow::Error;
 use lighty_launcher::{Authenticator, UserProfile, auth::{self, AuthProvider, ExposeSecret, SecretString}};
 
-
+// carrega uma conta online que já possui o keyring no seu computador
 pub async fn online_login() -> anyhow::Result<UserProfile> {
     let mut auth = auth::MicrosoftAuth::new(env!("CLIENT_ID"))
     .with_keyring("FerrumLauncher");
-
-
-    auth.set_device_code_callback(|code, url| {
-        println!("{code} -- {url}");
-    });
 
     let profile = match load_refresh_token() {
         Some(rt) => {
@@ -24,10 +20,31 @@ pub async fn online_login() -> anyhow::Result<UserProfile> {
         None => None
     };
 
-    let profile = match profile {
-        Some(profile) => profile,
-        None => auth.authenticate(None).await?
-    };
+    match profile {
+        Some(profile) => {
+            if let AuthProvider::Microsoft {refresh_token: Some(rt), .. } = &profile.provider {
+                save_refresh_token(rt)?;
+            }
+            Ok(profile)
+        }
+        None  => {
+            Err(Error::msg("Not logged"))
+        }
+    }
+}
+
+
+// carrega uma nova conta online
+pub async fn new_online_login() -> anyhow::Result<UserProfile> {
+    let mut auth = auth::MicrosoftAuth::new(env!("CLIENT_ID"))
+    .with_keyring("FerrumLauncher");
+
+
+    auth.set_device_code_callback(|code, url| {
+        println!("{code} -- {url}");
+    });
+
+    let profile =  auth.authenticate(None).await?;
 
     if let AuthProvider::Microsoft {refresh_token: Some(rt), .. } = &profile.provider {
         save_refresh_token(rt)?;

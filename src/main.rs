@@ -1,23 +1,18 @@
-mod view;
+mod db;
 mod launcher;
+mod view;
 
 use std::thread;
 
-use dioxus::signals::{GlobalSignal, Signal};
+use dioxus::signals::Signal;
 use lighty_launcher::UserProfile;
 
-use crate::view::view::App;
+use crate::{db::db::get_db, view::view::App};
 
-
-pub static STATE: GlobalSignal<AppState> = Signal::global(|| {
-    AppState {
-        current_user_profile: None
-    }
-});
-
-fn main() {
+#[tokio::main]
+async fn main() {
     thread::spawn(|| lighty_launcher::core::AppState::init("FerrumLauncher").expect(""));
-
+    get_db().await;
     // variavel de ambiente em tempo de compilação para fazer build do app
     //const CLIENT_ID: &str = env!("CLIENT_ID");
 
@@ -25,7 +20,6 @@ fn main() {
 }
 
 #[derive(Debug, Clone, Default)]
-struct AppState {
-    current_user_profile: Option<UserProfile>
+pub struct AppState {
+    current_user_profile: Signal<Option<UserProfile>>,
 }
-
