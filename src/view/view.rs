@@ -30,18 +30,8 @@ enum InitApp {
 
 #[component]
 pub fn App() -> Element {
-    let mut state = use_signal(|| InitApp::Loading);
-
-    use_context_provider(|| state);
-
-    use_resource(move || async move {
-        let app_state = AppState {
-            current_user_profile: Signal::new(None),
-        };
-
-        
-
-        state.set(InitApp::Loaded(app_state));
+    use_context_provider(|| AppState {
+        current_user_profile: Signal::new(None),
     });
 
     let mut current_user_profile = use_context::<AppState>().current_user_profile.clone();
