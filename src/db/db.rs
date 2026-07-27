@@ -1,6 +1,3 @@
-use std::path::PathBuf;
-
-use directories::ProjectDirs;
 use sea_orm::{Database, DatabaseConnection};
 use tokio::sync::OnceCell;
 
@@ -22,10 +19,10 @@ pub async fn get_db() -> &'static DatabaseConnection {
     .await
 }
 
-fn get_db_path() -> PathBuf {
-    if let Some(proj) = ProjectDirs::from("com", "ferrum", "FerrumLauncher") {
-        let data_dir = proj.data_dir();
-        return data_dir.join("profiles.db");
-    }
-    PathBuf::new()
-}
+// fn get_db_path() -> PathBuf {
+//     if let Some(proj) = ProjectDirs::from("com", "ferrum", "FerrumLauncher") {
+//         let data_dir = proj.data_dir();
+//         return data_dir.join("profiles.db");
+//     }
+//     PathBuf::new()
+// }

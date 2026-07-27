@@ -25,7 +25,9 @@ sea-orm = { version = "2.0.0", features = [
     "schema-sync",
     "entity-registry",
 ] }
+secrecy = { version = "0.10.3", features = ["serde"] }
 serde = "1.0.229"
+serde_json = "1.0.151"
 tokio = { version = "1.53.1", features = ["sync"] }
 
 

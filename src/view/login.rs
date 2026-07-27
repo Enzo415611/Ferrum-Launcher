@@ -3,13 +3,10 @@ use std::sync::LazyLock;
 use dioxus::prelude::*;
 use dioxus_style::with_css;
 use regex::Regex;
-use sea_orm::{ActiveModelBehavior, ActiveModelTrait};
+use sea_orm::ActiveModelTrait;
 
 use crate::{
-    db::{
-        db::get_db,
-        entity::user::{self, ActiveModel, Entity},
-    },
+    db::{db::get_db, entity::user::ActiveModel},
     launcher::{new_online_login, offline_login},
     view::view::Route,
     AppState,
@@ -79,11 +76,8 @@ pub fn Login() -> Element {
 #[with_css(css, "src/view/css/login.css")]
 fn UserButton() -> Element {
     let navigator = use_navigator();
-    
-    match &*use_context::<AppState>()
-        .current_user_profile
-        .read()
-    {
+
+    match &*use_context::<AppState>().current_user_profile.read() {
         Some(r) => rsx! {
             button {
                 onclick: move |_| {
@@ -142,9 +136,11 @@ fn OfflineLoginPage(username_input: Signal<String>, login_mode: Signal<LoginMode
                                     Ok(u) => {
                                         login_mode.set(LoginMode::None);
                                         info!("{:?}", u);
+
                                         let new_profile = ActiveModel {
-                                            name: sea_orm::ActiveValue::Set(u.username.clone()),
+                                            username: sea_orm::ActiveValue::Set(u.username.clone()),
                                             uuid: sea_orm::ActiveValue::Set(u.uuid.clone()),
+                                            refresh_token: sea_orm::ActiveValue::Set(None),
                                             ..Default::default()
                                         };
 
@@ -152,7 +148,7 @@ fn OfflineLoginPage(username_input: Signal<String>, login_mode: Signal<LoginMode
 
                                         *current_user_profile.write() = Some(u);
 
-                                        
+
 
                                     }
                                     Err(err) => {

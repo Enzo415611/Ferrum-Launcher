@@ -1,8 +1,5 @@
 use crate::{
-    db::{
-        db::get_db,
-        entity::user::{ActiveModel, Entity},
-    },
+    db::{db::get_db, entity::user::Entity},
     launcher::online_login,
     view::{home::Home, login::Login},
     AppState,
@@ -21,29 +18,48 @@ pub enum Route {
     #[route("/home")]
     Home {}
 }
-#[derive(Debug, Clone)]
-enum InitApp {
-    Loading,
-    Loaded(AppState),
-    Err(String),
-}
 
 #[component]
 pub fn App() -> Element {
-    use_context_provider(|| AppState {
+    use_context_provider(move || AppState {
         current_user_profile: Signal::new(None),
     });
 
-    let mut current_user_profile = use_context::<AppState>().current_user_profile.clone();
+    let current_user_profile = use_context::<AppState>().current_user_profile.clone();
 
-    match &*current_user_profile.read() {
-        Some(profile) => {
-            match &profile.provider {
-                AuthProvider::Microsoft {
-                    client_id,
-                    refresh_token,
-                } => {
-                    spawn(async move {
+    init_app(current_user_profile);
+
+    rsx! {
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        Router::<Route> {}
+    }
+}
+
+fn init_app(mut current_user_profile: Signal<Option<UserProfile>>) {
+    use_resource(move || async move {
+        match Entity::find().one(get_db().await).await {
+            Ok(profile) => {
+                if let Some(profile) = profile {
+                    if profile.refresh_token.is_none() {
+                        // offline
+                        info!("offline");
+                        *current_user_profile.write() = Some(UserProfile {
+                            access_token: None,
+                            banned: false,
+                            email: None,
+                            email_verified: false,
+                            id: None,
+                            money: None,
+                            provider: AuthProvider::Offline,
+                            xuid: None,
+                            role: None,
+                            uuid: profile.uuid,
+                            token_handle: None,
+                            username: profile.username,
+                        });
+                    } else {
+                        // online
+                        info!("online");
                         match online_login().await {
                             Ok(profile) => {
                                 info!("{:?}", profile);
@@ -53,49 +69,12 @@ pub fn App() -> Element {
                                 *current_user_profile.write() = None;
                             }
                         }
-                    });
+                    }
                 }
-                AuthProvider::Offline => {
-                    spawn(async move {
-                        let conn = get_db().await;
-
-                        let last_profile = match Entity::find().one(conn).await {
-                            Ok(profile) => profile,
-                            Err(_) => None,
-                        };
-
-                        if let Some(profile) = last_profile {
-                            info!("aqui");
-                            *current_user_profile.write() = Some(UserProfile {
-                                access_token: None,
-                                banned: false,
-                                email: None,
-                                email_verified: false,
-                                id: None,
-                                money: None,
-                                provider: AuthProvider::Offline,
-                                xuid: None,
-                                role: None,
-                                uuid: profile.uuid,
-                                token_handle: None,
-                                username: profile.name,
-                            });
-                        }
-
-                        //let all_offline_profiles = match Entity::find().all(&conn).await {
-                        //    Ok(profiles) => profiles,
-                        //    Err(_) => vec![]
-                        //};
-                    });
-                }
-                _ => {}
+            }
+            Err(err) => {
+                info!("{}", err);
             }
         }
-        None => {}
-    };
-
-    rsx! {
-        document::Link { rel: "stylesheet", href: MAIN_CSS }
-        Router::<Route> {}
-    }
+    });
 }
